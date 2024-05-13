@@ -179,7 +179,7 @@ export const updateUser = async (req, res) => {
     user.username = username || user.username;
     user.bio = bio || user.bio;
     console.log("bio", bio);
- 
+
     user.link = link || user.link;
     user.profileImg = profileImg || user.profileImg;
     user.coverImg = coverImg || user.coverImg;
