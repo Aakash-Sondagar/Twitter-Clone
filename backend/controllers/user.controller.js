@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import { v2 as cloudinary } from "cloudinary";
 
 import User from "../models/user.model.js";
 import Notification from "../models/notification.model.js";
@@ -120,14 +121,14 @@ export const updateUser = async (req, res) => {
 
     const userId = req.user._id;
 
-    const user = await User.findById(userId);
+    let user = await User.findById(userId);
     if (!user) return res.status(404).json({ error: "User not found" });
 
     if (
       (!newPassword && currentPassword) ||
       (newPassword && !currentPassword)
     ) {
-      res.send(400).json({
+      return res.status(400).json({
         message: "Please provide both current and new passwords",
       });
     }
@@ -147,18 +148,46 @@ export const updateUser = async (req, res) => {
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(newPassword, salt);
     }
-
     if (profileImg) {
-      user.profileImg = profileImg;
+      // Destroy old image from cloudinary
+      if (user.profileImg) {
+        await cloudinary.uploader.destroy(
+          user.profileImg.split("/").pop().split(".")[0]
+        );
+      }
+      const uploadedResponse = await cloudinary.uploader.upload(profileImg, {
+        folder: "profile-images",
+      });
+      profileImg = uploadedResponse.secure_url;
     }
 
     if (coverImg) {
-      user.coverImg = coverImg;
+      // Destroy old image from cloudinary
+      if (user.coverImg) {
+        await cloudinary.uploader.destroy(
+          user.coverImg.split("/").pop().split(".")[0]
+        );
+      }
+      const uploadedResponse = await cloudinary.uploader.upload(coverImg, {
+        folder: "cover-images",
+      });
+      coverImg = uploadedResponse.secure_url;
     }
 
-    await User.findByIdAndUpdate(req.user._id, { name, bio });
+    user.fullName = fullName || user.fullName;
+    user.email = email || user.email;
+    user.username = username || user.username;
+    user.bio = bio || user.bio;
+    console.log("bio", bio);
+ 
+    user.link = link || user.link;
+    user.profileImg = profileImg || user.profileImg;
+    user.coverImg = coverImg || user.coverImg;
 
-    res.status(200).json({ message: "User updated successfully" });
+    user = await user.save();
+    user.password = null;
+
+    return res.status(200).json(user);
   } catch (error) {
     console.log(`Error in updateUser controller: ${error.message} `);
     res.status(500).json({ error: "Internal Server Error" });
