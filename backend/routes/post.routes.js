@@ -4,6 +4,9 @@ import { protectRoute } from "../middleware/protectRoute.js";
 
 import {
   getAllPost,
+  getAllFollowingPost,
+  getLikedPost,
+  getUserPost,
   createPost,
   likeUnlikePost,
   commentOnPost,
@@ -13,6 +16,9 @@ import {
 const router = express.Router();
 
 router.get("/all", protectRoute, getAllPost);
+router.get("/following", protectRoute, getAllFollowingPost);
+router.get("/likes/:id", protectRoute, getLikedPost);
+router.get("/user/:username", protectRoute, getUserPost);
 
 router.post("/create", protectRoute, createPost);
 router.post("/like/:id", protectRoute, likeUnlikePost);
