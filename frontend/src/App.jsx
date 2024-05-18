@@ -4,11 +4,17 @@ import Home from "./pages/Home";
 import SignUp from "./pages/SignUp";
 import Sample from "./pages/Sample";
 import Login from "./pages/Login";
+import Notification from "./pages/Notification";
+import Profile from "./pages/Profile";
+import Sidebar from "./components/common/Sidebar";
+import RightPanel from "./components/common/RightPanel";
 
 const Layout = () => {
   return (
-    <div>
+    <div className="flex max-w-6xl mx-auto">
+      <Sidebar />
       <Outlet />
+      <RightPanel />
     </div>
   );
 };
@@ -34,15 +40,23 @@ const router = createBrowserRouter([
         path: "/login",
         element: <Login />,
       },
+      {
+        path: "/notifications",
+        element: <Notification />,
+      },
+      {
+        path: "/profile/:username",
+        element: <Profile />,
+      },
     ],
   },
 ]);
 
 const App = () => {
   return (
-    <div>
+    <>
       <RouterProvider router={router} />
-    </div>
+    </>
   );
 };
 
