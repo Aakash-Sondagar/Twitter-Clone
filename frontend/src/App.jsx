@@ -2,10 +2,11 @@ import { RouterProvider, createBrowserRouter, Outlet } from "react-router-dom";
 
 import Home from "./pages/Home";
 import SignUp from "./pages/SignUp";
-import Sample from "./pages/Sample";
 import Login from "./pages/Login";
 import Notification from "./pages/Notification";
 import Profile from "./pages/Profile";
+import Error from "./pages/Error";
+
 import Sidebar from "./components/common/Sidebar";
 import RightPanel from "./components/common/RightPanel";
 
@@ -23,11 +24,8 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
+    errorElement: <Error />,
     children: [
-      {
-        path: "/temp",
-        element: <Sample />,
-      },
       {
         path: "/",
         element: <Home />,
