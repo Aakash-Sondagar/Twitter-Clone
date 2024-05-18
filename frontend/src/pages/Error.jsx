@@ -1,7 +1,7 @@
 import { useRouteError } from "react-router-dom";
 import { Link } from "react-router-dom";
 
-import { MdCloudOff } from "react-icons/md";
+import { GoCloudOffline } from "react-icons/go";
 import { MdOutlineRefresh } from "react-icons/md";
 
 const Error = () => {
@@ -10,7 +10,7 @@ const Error = () => {
   return (
     <div className="flex-[4_4_0] mr-auto border-r border-gray-700 min-h-screen">
       <div className="flex flex-col items-center p-10 justify-center mt-7 text-white">
-        <MdCloudOff className="text-8xl" />
+        <GoCloudOffline className="text-8xl" />
         <h1 className="text-center text-xl font-bold mt-2">
           Something went wrong, but don’t fret — it’s not your fault.
         </h1>

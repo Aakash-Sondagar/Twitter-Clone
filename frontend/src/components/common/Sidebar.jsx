@@ -7,7 +7,6 @@ import { GoBellFill } from "react-icons/go";
 import { GoPerson } from "react-icons/go";
 import { GoPersonFill } from "react-icons/go";
 
-import { BiLogOut } from "react-icons/bi";
 import { GoKebabHorizontal } from "react-icons/go";
 
 import XSvg from "../svgs/X";
