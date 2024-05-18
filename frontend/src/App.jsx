@@ -19,7 +19,6 @@ import RightPanel from "./components/common/RightPanel";
 const Layout = () => {
   const location = useLocation();
   const currentPath = location.pathname;
-  const projectName = "X Clone";
 
   const getPage = () => {
     if (currentPath === "/") return "home";
@@ -42,7 +41,7 @@ const Layout = () => {
             currentPath.substring("/profile/".length)
           )}'s Profile`
         : capitalizeFirstLetter(page);
-    document.title = newTitle + ` / ${projectName}`;
+    document.title = newTitle + " / X Clone";
   }, [currentPath]);
 
   return (
