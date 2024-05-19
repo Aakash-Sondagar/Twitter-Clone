@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-hot-toast";
 
 import { FaRegComment } from "react-icons/fa";
 import { BiRepost } from "react-icons/bi";
@@ -7,18 +9,52 @@ import { FaRegHeart } from "react-icons/fa";
 import { FaRegBookmark } from "react-icons/fa6";
 import { FaTrash } from "react-icons/fa";
 
+import LoadingSpinner from "../common/LoadingSpinner";
+
+import apiService from "../../utils/apiService";
+
 const Post = ({ post }) => {
   const [comment, setComment] = useState("");
+
+  const queryClient = useQueryClient();
+  const { data: authUser } = useQuery({
+    queryKey: ["authUser"],
+  });
+
+  const { mutate: deletePostMutation, isLoading: isDeletingPost } = useMutation(
+    {
+      mutationFn: async () => {
+        try {
+          const response = await apiService("delete", `/api/posts/${post._id}`);
+          const data = await response.json();
+
+          if (!response.ok)
+            throw new Error(data.message || "Something went wrong");
+
+          return data;
+        } catch (error) {
+          throw new Error(error);
+        }
+      },
+      onSuccess: () => {
+        toast.success("Post deleted successfully");
+        queryClient.invalidateQueries({ queryKey: ["posts"] });
+      },
+    }
+  );
+
   const postOwner = post.user;
   const isLiked = false;
 
-  const isMyPost = true;
+  const isMyPost = authUser._id === post.user._id;
 
   const formattedDate = "1h";
 
   const isCommenting = false;
 
-  const handleDeletePost = () => {};
+  const handleDeletePost = () => {
+    deletePostMutation();
+  };
 
   const handlePostComment = (e) => {
     e.preventDefault();
@@ -57,6 +93,7 @@ const Post = ({ post }) => {
                 />
               </span>
             )}
+            {isDeletingPost && <LoadingSpinner size="sm" />}
           </div>
           <div className="flex flex-col gap-3 overflow-hidden">
             <span>{post.text}</span>
