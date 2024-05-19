@@ -54,7 +54,7 @@ const Home = () => {
       <CreatePost />
 
       {/* POSTS */}
-      <Posts />
+      <Posts feedType={feedType} />
     </div>
   );
 };
