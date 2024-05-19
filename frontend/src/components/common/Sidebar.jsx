@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 import { GoHome } from "react-icons/go";
 import { GoHomeFill } from "react-icons/go";
@@ -10,14 +12,36 @@ import { GoPersonFill } from "react-icons/go";
 import { GoKebabHorizontal } from "react-icons/go";
 
 import XSvg from "../svgs/X";
+import apiService from "../../utils/apiService";
 
 const Sidebar = (props) => {
-  const data = {
-    fullName: "John Doe",
-    username: "johndoe",
-    profileImg: "/avatars/boy1.png",
-  };
   const selectedPage = props.pageTitle;
+
+  const queryClient = useQueryClient();
+
+  const { mutate: logout } = useMutation({
+    mutationFn: async () => {
+      try {
+        const response = await apiService("post", "/api/auth/logout");
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Something went wrong");
+        }
+      } catch (error) {
+        console.log(error);
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      toast.success("Log out successful");
+      queryClient.invalidateQueries(["authUser"]);
+    },
+    onError: () => {
+      toast.error("Logout failed");
+    },
+  });
+  const { data: authUser } = useQuery({ queryKey: ["authUser"] });
 
   return (
     <div className="md:flex-[2_2_0] w-20 max-w-52">
@@ -68,7 +92,7 @@ const Sidebar = (props) => {
           </li>
           <li className="flex justify-center md:justify-start">
             <Link
-              to={`/profile/${data?.username}`}
+              to={`/profile/${authUser?.username}`}
               className="flex gap-3 items-center hover:bg-stone-900 transition-all rounded-full duration-300 py-2 pl-2 pr-4 max-w-fit cursor-pointer"
             >
               {selectedPage === "profile" ? (
@@ -87,7 +111,7 @@ const Sidebar = (props) => {
             </Link>
           </li>
         </ul>
-        {data && (
+        {authUser && (
           <div className="dropdown dropdown-top mt-auto mb-10">
             <div
               tabIndex={0}
@@ -96,15 +120,17 @@ const Sidebar = (props) => {
             >
               <div className="avatar hidden md:inline-flex">
                 <div className="w-8 rounded-full">
-                  <img src={data?.profileImg || "/avatar-placeholder.png"} />
+                  <img
+                    src={authUser?.profileImg || "/avatar-placeholder.png"}
+                  />
                 </div>
               </div>
               <div className="flex items-center justify-between flex-1">
                 <div className="ml-2 hidden md:block">
                   <p className="text-white font-bold text-sm w-20 truncate">
-                    {data?.fullName}
+                    {authUser?.fullName}
                   </p>
-                  <p className="text-gray-500 text-sm">@{data?.username}</p>
+                  <p className="text-gray-500 text-sm">@{authUser?.username}</p>
                 </div>
                 <GoKebabHorizontal className="w-5 h-5 mr-1" />
               </div>
@@ -119,9 +145,15 @@ const Sidebar = (props) => {
                 </Link>
               </li>
               <li>
-                <Link to={"/login"} className="hover:bg-stone-900 rounded-xl">
-                  Log out @{data.username}
-                </Link>
+                <div
+                  to={"/login"}
+                  className="hover:bg-stone-900 rounded-xl"
+                  onClick={() => {
+                    logout();
+                  }}
+                >
+                  Log out @{authUser?.username}
+                </div>
               </li>
             </ul>
           </div>

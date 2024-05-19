@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 import { MdEmail } from "react-icons/md";
 import { FaUser } from "react-icons/fa";
@@ -7,6 +9,8 @@ import { MdPassword } from "react-icons/md";
 import { MdDriveFileRenameOutline } from "react-icons/md";
 
 import XSvg from "../components/svgs/X";
+
+import apiService from "../utils/apiService";
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -20,11 +24,40 @@ const SignUp = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const queryClient = useQueryClient();
+
+  // Use Mutation to manipulate the data like Create Update & delete
+  const {
+    mutate: signupMutation,
+    isError,
+    isPending,
+    error,
+  } = useMutation({
+    mutationFn: async () => {
+      try {
+        const response = await apiService("post", "/api/auth/signup", formData);
+
+        const data = await response.json();
+        if (!response.ok)
+          throw new Error(data?.message || "Failed to create account");
+        return data;
+      } catch (error) {
+        console.error("error", error);
+        toast.error(error.message);
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      toast.success("Account created successfully");
+      queryClient.invalidateQueries(["authUser"]);
+    },
+  });
+  // when we need to fetch data
+  // useQuery();
   const handelSubmit = (e) => {
-    e.preventDefault();
-    console.log(formData);
+    e.preventDefault(); // page won't reload
+    signupMutation(formData);
   };
-  const isError = false;
 
   return (
     <div className="max-w-screen-xl mx-auto h-screen px-10 flex">
@@ -85,11 +118,9 @@ const SignUp = () => {
             />
           </label>
           <button className="btn rounded-full btn-primary text-white">
-            Sign up
+            {isPending ? "Loading..." : "Sign Up"}
           </button>
-          {isError && (
-            <p className="text-red-500 mx-auto">Something went wrong</p>
-          )}
+          {isError && <p className="text-red-500 mx-auto">{error.message}</p>}
         </form>
         <div className="flex mt-4">
           <p className="text-white text-base">Have an account already?</p>

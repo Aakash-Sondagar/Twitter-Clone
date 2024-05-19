@@ -1,10 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-hot-toast";
 
 import { MdOutlineMail } from "react-icons/md";
 import { MdPassword } from "react-icons/md";
 
 import XSvg from "../components/svgs/X";
+
+import apiService from "../utils/apiService";
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -12,16 +16,41 @@ const LoginPage = () => {
     password: "",
   });
 
+  const queryClient = useQueryClient();
+
+  const {
+    mutate: loginMutation,
+    isError,
+    isPending,
+    error,
+  } = useMutation({
+    mutationFn: async (formData) => {
+      try {
+        const response = await apiService("post", "/api/auth/login", formData);
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data?.message || "Failed to login");
+        return data;
+      } catch (error) {
+        toast.error(error.message);
+        console.error("error", error);
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      toast.success("Login successful");
+      queryClient.invalidateQueries(["authUser"]);
+    },
+  });
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(formData);
+    loginMutation(formData);
   };
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-
-  const isError = false;
 
   return (
     <div className="max-w-screen-xl mx-auto flex h-screen">
@@ -55,9 +84,9 @@ const LoginPage = () => {
             />
           </label>
           <button className="btn rounded-full btn-primary text-white">
-            Login
+            {isPending ? "Loading..." : "Login"}
           </button>
-          {isError && <p className="text-red-500">Something went wrong</p>}
+          {isError && <p className="text-red-500 mx-auto">{error.message}</p>}
         </form>
         <div className="flex justify-center items-center gap-2 mt-4">
           <p className="text-white text-lg">Don't have an account?</p>
