@@ -20,25 +20,25 @@ import Sidebar from "./components/common/Sidebar";
 import RightPanel from "./components/common/RightPanel";
 
 import apiService from "./utils/apiService";
+import XSvg from "./components/svgs/X";
 
 const capitalizeFirstLetter = (string) => {
   return string.charAt(0).toUpperCase() + string.slice(1);
 };
 
 const getPage = (currentPath) => {
-  switch (currentPath) {
-    case "/":
-      return "home";
-    case "/signup":
-      return "signup";
-    case "/login":
-      return "login";
-    case "/notifications":
-      return "notifications";
-    case /^\/profile\/.*$/:
-      return "profile";
-    default:
-      return "";
+  if (currentPath.startsWith("/profile/")) {
+    return "profile";
+  } else if (currentPath === "/") {
+    return "home";
+  } else if (currentPath === "/signup") {
+    return "signup";
+  } else if (currentPath === "/login") {
+    return "login";
+  } else if (currentPath === "/notifications") {
+    return "notifications";
+  } else {
+    return "";
   }
 };
 
@@ -58,17 +58,19 @@ const Layout = ({ authUser }) => {
   }, [currentPath]); // Dependency array for useEffect
 
   return (
-    <div className="flex max-w-6xl mx-auto">
-      {authUser && <Sidebar pageTitle={page} />}
-      <Outlet />
-      {authUser && <RightPanel />}
+    <div>
+      <div className="flex max-w-6xl mx-auto">
+        {authUser && <Sidebar pageTitle={page} />}
+        <Outlet />
+        {authUser && <RightPanel />}
+      </div>
       <Toaster />
     </div>
   );
 };
 
 const requiresAuth = (children, name) => {
-  const { data: authUser } = useQuery({
+  const { data: authUser, isLoading } = useQuery({
     // we use queryKey to give a unique name to our query and refer to it later
     queryKey: ["authUser"],
     queryFn: async () => {
@@ -85,6 +87,14 @@ const requiresAuth = (children, name) => {
       }
     },
   });
+
+  if (isLoading) {
+    return (
+      <div className="h-screen flex justify-center items-center">
+        <XSvg className=" w-80 fill-white motion-safe:animate-spin" />
+      </div>
+    );
+  }
 
   if (["home", "notifications", "profile"].includes(name)) {
     if (!authUser) {
