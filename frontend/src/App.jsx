@@ -5,6 +5,7 @@ import {
   Outlet,
   useLocation,
 } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 
 import Home from "./pages/Home";
 import SignUp from "./pages/SignUp";
@@ -49,6 +50,7 @@ const Layout = () => {
       <Sidebar pageTitle={page} />
       <Outlet />
       <RightPanel />
+      <Toaster />
     </div>
   );
 };
