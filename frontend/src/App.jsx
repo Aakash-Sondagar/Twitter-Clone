@@ -91,7 +91,7 @@ const requiresAuth = (children, name) => {
   if (isLoading) {
     return (
       <div className="h-screen flex justify-center items-center">
-        <XSvg className=" w-80 fill-white motion-safe:animate-spin" />
+        <XSvg className="w-80 fill-white" />
       </div>
     );
   }
