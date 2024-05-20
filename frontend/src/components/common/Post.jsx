@@ -15,17 +15,16 @@ import apiService from "../../utils/apiService";
 
 const Post = ({ post }) => {
   const [comment, setComment] = useState("");
+  const queryClient = useQueryClient();
+
+  const { data: authUser } = useQuery({
+    queryKey: ["authUser"],
+  });
 
   const postOwner = post.user;
   const isLiked = post.likes.includes(authUser._id);
   const isMyPost = authUser._id === post.user._id;
   const formattedDate = formatPostDate(post.createdAt);
-
-  const queryClient = useQueryClient();
-  
-  const { data: authUser } = useQuery({
-    queryKey: ["authUser"],
-  });
 
   const { mutate: deletePostMutation, isPending: isDeletingPost } = useMutation(
     {
@@ -63,7 +62,6 @@ const Post = ({ post }) => {
       }
     },
     onSuccess: (updatedLikes) => {
-      toast.success("Post liked successfully");
       // this is not the best UX, because it will refetch all posts
       // queryClient.invalidateQueries({ queryKey: ["posts"] });
       queryClient.setQueryData(["posts"], (oldData) => {
