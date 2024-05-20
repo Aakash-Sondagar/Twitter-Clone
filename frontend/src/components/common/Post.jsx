@@ -10,13 +10,19 @@ import { FaRegBookmark } from "react-icons/fa6";
 import { FaTrash } from "react-icons/fa";
 
 import LoadingSpinner from "../common/LoadingSpinner";
-
+import { formatPostDate } from "../../utils/date";
 import apiService from "../../utils/apiService";
 
 const Post = ({ post }) => {
   const [comment, setComment] = useState("");
 
+  const postOwner = post.user;
+  const isLiked = post.likes.includes(authUser._id);
+  const isMyPost = authUser._id === post.user._id;
+  const formattedDate = formatPostDate(post.createdAt);
+
   const queryClient = useQueryClient();
+  
   const { data: authUser } = useQuery({
     queryKey: ["authUser"],
   });
@@ -74,14 +80,30 @@ const Post = ({ post }) => {
     },
   });
 
-  const postOwner = post.user;
-  const isLiked = post.likes.includes(authUser._id);
+  const { mutate: commentPost, isPending: isCommenting } = useMutation({
+    mutationFn: async () => {
+      try {
+        const res = await apiService("post", `/api/posts/comment/${post._id}`, {
+          text: comment,
+        });
+        const data = await res.json();
 
-  const isMyPost = authUser._id === post.user._id;
+        if (!res.ok) throw new Error(data.error || "Something went wrong");
 
-  const formattedDate = "1h";
-
-  const isCommenting = false;
+        return data;
+      } catch (error) {
+        throw new Error(error);
+      }
+    },
+    onSuccess: () => {
+      toast.success("Comment posted successfully");
+      setComment("");
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    },
+    onError: () => {
+      toast.error(error.message);
+    },
+  });
 
   const handleDeletePost = () => {
     deletePostMutation();
@@ -89,6 +111,8 @@ const Post = ({ post }) => {
 
   const handlePostComment = (e) => {
     e.preventDefault();
+    if (isCommenting) return;
+    commentPost();
   };
 
   const handleLikePost = () => {
